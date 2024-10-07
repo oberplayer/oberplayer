@@ -1,0 +1,81 @@
+.l-player-container {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  display: flex;
+
+  // old browsers
+  button {
+    background: none;
+    border: 0;
+  }
+  button:focus {outline-color: white;}
+
+  /* will be automatically inherited so let's fix it here */
+  *:not(svg *, symbol *, video) {
+    all: unset;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: 1em;
+  }
+
+  overflow: hidden;
+  text-align: left;
+  cursor: none;
+
+  &.is--touchdevice h2 {
+    font-size: inherit;
+    line-height: inherit;
+  }
+
+  h2 {
+    padding: calc(var(--oberplayer-spacing-vertical) * 2) calc(var(--oberplayer-spacing-vertical) * 2) var(--oberplayer-spacing-vertical);
+    margin: 0;
+    white-space: nowrap;
+    text-align: initial;
+    font-size: 1.25em;
+    line-height: 1.25em;
+    display: block;
+  }
+
+  p {
+    padding: 0 calc(var(--oberplayer-spacing-vertical) * 2);
+    margin: 0;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    text-align: initial;
+    display: block;
+  }
+
+  select {
+    appearance: auto;
+    text-align: right;
+    white-space: nowrap;
+    align-items: center;
+    padding: 0 var(--oberplayer-spacing-vertical / 2.5);
+  }
+
+  svg {
+    pointer-events: none;
+  }
+
+  // normalized colors native chrome and safari
+  video::cue(c.black) { color: #000; }
+  video::cue(c.red) { color: #F00; }
+  video::cue(c.lime) { color: #0F0; }
+  video::cue(c.yellow) { color: #FF0; }
+  video::cue(c.blue) { color: #00F; }
+  video::cue(c.magenta) { color: #F0F; }
+  video::cue(c.cyan) { color: #0FF; }
+  video::cue(c.white) { color: #FFF; }
+  video::cue(c.bg_black) { background-color: #000; }
+  video::cue(c.bg_red) { background-color: #F00; }
+  video::cue(c.bg_lime) { background-color: #0F0; }
+  video::cue(c.bg_yellow) { background-color: #FF0; }
+  video::cue(c.bg_blue) { background-color: #00F; }
+  video::cue(c.bg_magenta) { background-color: #F0F; }
+  video::cue(c.bg_cyan) { background-color: #0FF; }
+  video::cue(c.bg_white) { background-color: #FFF; }  
+}

@@ -1,0 +1,325 @@
+.l-player-container {
+  &.is--controlsvisible {
+    cursor: auto;
+  }
+
+  &.is--small {
+    .is--small-hidden {
+      display: none;
+    }
+
+    .icons {
+      padding: calc(var(--oberplayer-spacing-vertical) * 0.4);
+      transform: scale(0.8);
+
+      &.loader {
+        transform: scale(0.8);
+        align-items: center;
+      }
+    }
+
+    .volume-slider {
+      transform: scale(0.8);
+    }
+
+    .message {
+      h2 {
+        font-size: 2.5em;
+      }
+
+      span {
+        font-size: 2em;
+      }
+
+      h2,
+      p {
+        white-space: normal;
+        text-align: center;
+        margin: 0;
+      }
+
+      svg {
+        display: none;
+      }
+    }
+
+    .is--hover {
+      .hoverInfo {
+        transform: scale(0.9);
+      }
+    }
+
+    .hoverInfo {
+      bottom: 50px;
+    }
+  }
+
+  &.is--fullscreen {
+    padding: 0;
+  }
+
+  &.is--complete:not(.is--dragging) {
+    .complete {
+      display: flex;
+    }
+  }
+
+  &.is--live {
+    .l-controls {
+      .time,
+      .timeline {
+        display: none !important;
+      }
+    }
+  }
+
+  &.is--adplayer {
+    .settings {
+      display: none;
+    }
+
+    input[type='range']::-webkit-slider-thumb {
+      display: none;
+    }
+
+    .timeline output {
+      display: none;
+    }
+
+    .rangeslider {
+      cursor: auto;
+    }
+  }
+
+  &.is--ready:not(.is--waitingforclick) {
+    .timeline,
+    .time,
+    .l-buttons--left,
+    .l-buttons--right {
+      display: flex;
+      align-items: center;
+    }
+  }
+
+  &:not(.is--ready).is--waitingforclick {
+    .previous,
+    .next {
+      display: none;
+    }
+  }
+
+  &:not(.is--touchdevice).is--waitingforclick {
+    cursor: pointer;
+  }
+
+  &:not(.is--waitingforclick).is--touchdevice {
+    .play
+    {
+      background: none;
+    }
+  }
+
+  &.is--waitingforclick:not(.is--ready) {
+    .loader {
+      display: flex;
+    }
+  }
+
+  &.is--touchdevice {
+    min-width: auto;
+    min-height: auto;
+
+    .loader,
+    .complete,
+    .play
+    {
+      transform: scale(1.2) !important;
+    }
+
+    .l-settings {
+      width: 96%;
+      right: 0;
+      padding: 2%;
+      height: 100%;
+      background: #000;
+      top: 0;
+      max-height: none;
+      max-width: 100%;
+      align-items: center;
+      align-content: center;
+      grid-template-columns:none;
+
+      select {
+        text-align: left;
+        background-color: #333;
+        max-width: 100%;
+      }
+
+      .icons {
+        padding:0;
+      }
+    }
+
+    .hoverInfo, .chapterMarker {
+      display: none !important;
+    }
+
+    .is--hover::after {
+      display: none;
+    }
+
+    .is--touch-hidden {
+      display: none;
+    }
+
+    .fullscreenStatus {
+      &.is--hover::after {
+        display: none;
+      }
+    }
+
+    .l-clickcatcher .l-controls {
+      .timeline output,
+      .playStatus {
+        display: none;
+      }
+
+      .timeline {
+        margin: 0 20px 20px;
+      }
+
+      .l-buttons {
+        margin: 0 20px;
+      }
+
+      .time {
+        padding: 0;
+      }
+
+      .timeline > input {
+        margin: 0;
+      }
+    }
+  }
+
+  &.is--buffering,
+  &:not(.is--ready) &:not(.is--message) {
+    .loader {
+      display: flex !important;
+    }
+
+    .play {
+      display: none !important;
+    }
+  }
+
+  &.is--messageunderclickcatcher {
+    .l-clickcatcher {
+      z-index: 1;
+    }
+  }
+
+  &.is--message {
+    .loader {
+      display: none !important;
+    }
+  }
+
+  &:not(.is--live) .live {
+    display: none;
+  }
+
+  &.is--controlsvisible,
+  &.is--waitingforclick,
+  &.is--seeking {
+    .l-clickcatcher {
+      .l-controls {
+        opacity: 1;
+      }
+    }
+  }
+
+  &.is--waitingforclick {
+    .l-controls {
+      .cast,
+      .airplay,
+      .volume,
+      .settings,
+      .fullscreenStatus,
+      .playStatus,
+      .time,
+      .live,
+      .hd,
+      .uhd,
+      .hdr,
+      .timeline {
+        display: none !important;
+      }
+    }
+  }
+
+  &:not(.is--touchdevice, .is--waitingforclick),
+  &.is--touchdevice.is--complete {
+    .play {
+      display: none;
+    }
+  }
+
+  .is--open {
+    display: grid !important;
+    align-items: center;
+    grid-gap: calc(var(--oberplayer-spacing-vertical));
+  }
+
+  &.is--stylesheetloaded.is--ready {
+    .loader {
+      display: none;
+    }
+
+    .l-clickcatcher {
+      .l-controls {
+        display: flex;
+      }
+    }
+  }
+
+  .volume-slider.is--hover {
+    width: 80px;
+  }
+
+  &.is--chromeless {
+    .l-controls {
+      display: none;
+    }
+  }
+
+  &.is--chromecasting {
+    .l-controls {
+      opacity: 1;
+    }
+  }
+
+  // ads on touch
+  &.is--touchdevice.is--adplayer {
+    .timeline {
+      pointer-events: none;
+      margin: 0 !important;
+    }
+
+    .l-buttons {
+      margin: 0 !important;
+    }
+
+    .play {
+      display: none;
+    }
+
+    .l-controls {
+      opacity: 1 !important;
+    }
+
+    .playStatus {
+      display: block !important;
+    }
+  }
+}

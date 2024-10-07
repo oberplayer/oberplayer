@@ -1,0 +1,71 @@
+{
+  "name": "@oberplayer-free/oberplayer",
+  "author": "Thibaut Lion LID",
+  "version": "3.0.2",
+  "types": "oberplayer.d.ts",
+  "files": [
+    "dist",
+    "player.d.ts"
+  ],
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./oberplayer.d.ts",
+        "default": "./dist/esm/oberplayer.js"
+      },
+      "require": {
+        "types": "./oberplayer.d.ts",
+        "default": "./dist/cjs/oberplayer.js"
+      }
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oberplayer/oberplayer.git"
+  },
+  "config": {
+    "LOCAL_UNSECURE_CDN_BASE_URL": "http://localhost:3001",
+    "LOCAL_SECURE_CDN_BASE_URL": "https://localhost:3002",
+    "DISTANT_SECURE_CDN_BASE_URL": "https://cdn.oberplayer.com"
+  },
+  "scripts": {
+    "clean": "rm -rf ./dist/esm/*",
+    "tsc": "tsc --noEmit --strict",
+    "build": "npm run clean && npm run bundle:distant:iife && npm run bundle:distant:mjs && npm run bundle:distant:cjs",
+    "start": "npm run build && concurrently \"npm run bundle:local:cjs:watch\" \"npm run bundle:local:esm:watch\" \"npm run bundle:local:iife:watch\"",
+    "lint": "npx eslint src src/oberplayer.jsx && stylelint **/*.scss && npm run tsc",
+    "bundle:local:iife:watch": "node esbuild.local.iife.mjs",
+    "bundle:local:esm:watch": "node esbuild.local.esm.mjs",
+    "bundle:local:cjs:watch": "node esbuild.local.cjs.mjs",
+    "bundle:distant:iife": "node esbuild.distant.iife.mjs",
+    "bundle:distant:mjs": "node esbuild.distant.esm.mjs",
+    "bundle:distant:cjs": "node esbuild.distant.cjs.mjs"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.10",
+    "@types/react-dom": "^18.3.0",
+    "@typescript-eslint/eslint-plugin": "^8.5.0",
+    "@typescript-eslint/parser": "^8.5.0",
+    "concurrently": "^9.0.1",
+    "esbuild": "^0.23.1",
+    "esbuild-config": "^1.0.1",
+    "esbuild-sass-plugin": "^3.3.1",
+    "eslint": "^9.10.0",
+    "eslint-plugin-jsx-a11y": "^6.10.0",
+    "eslint-plugin-react": "^7.36.1",
+    "semver": "^7.5.2",
+    "stylelint": "^16.2.0",
+    "stylelint-config-standard-scss": "^13.0.0",
+    "typescript-eslint": "^8.5.0"
+  },
+  "bugs": {
+    "url": "https://github.com/oberplayer/oberplayer/issues"
+  },
+  "homepage": "https://github.com/oberplayer/oberplayer#readme",
+  "description": "",
+  "dependencies": {
+    "@types/node-polyglot": "^2.5.0",
+    "node-polyglot": "^2.5.0",
+    "preact": "^10.23.2"
+  }
+}

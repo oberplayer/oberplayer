@@ -1,0 +1,21 @@
+.l-player-container {
+  --oberplayer-primary-color: #08f854;
+
+  // timeline
+  --oberplayer-rail-background: hsl(0deg 0% 100%);
+  --oberplayer-rail-color: #08f854;
+
+  // button
+  --oberplayer-button-background: rgb(159 33 103 / 70%);
+  --oberplayer-button-color: #fff;
+
+  // overlay
+  --oberplayer-background: rgb(159 33 103 / 70%);
+
+  // spacing
+  --oberplayer-spacing-vertical: 10px;
+  --oberplayer-spacing-horizontal: 10px;
+
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 20px;
+}

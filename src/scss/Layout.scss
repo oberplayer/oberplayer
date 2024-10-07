@@ -1,0 +1,78 @@
+.l-player-container {
+  .l-clickcatcher {
+    align-content: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    height: 100%;
+    position: absolute;
+    width: 100%;
+    left: 0;
+    top: 0;
+    display: flex;
+  }
+
+  .l-controls {
+    display: flex;
+    justify-content: center;
+    opacity: 0;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    > .volumeStatus {
+      position: absolute;
+      right: 6px;
+      top: 6px;
+    }
+
+    &--bottom {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+    }
+
+    .l-buttons {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      &--right,
+      &--left {
+        display: flex;
+        align-items: center;
+      }
+    }
+
+    &__info {
+      transition: 0.3s;
+      width: 100%;
+      position: absolute;
+    }
+  }
+
+  .gotobutton,
+  .adSkipButton {
+    position: absolute;
+    right: var(--oberplayer-spacing-horizontal);
+    bottom: calc(var(--oberplayer-spacing-vertical) * 4 + 18px);
+    padding: var(--oberplayer-spacing-vertical);
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .adSkipButton {
+    // is behind cta div
+    z-index: 2;
+  }
+
+  ::cue {
+    transform: translateY(-70px);
+  }
+  
+  video::-webkit-media-text-track-container {
+    transform: translateY(-70px);
+  }
+}

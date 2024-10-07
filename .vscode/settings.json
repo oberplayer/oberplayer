@@ -1,0 +1,8 @@
+{
+  "eslint.options": {
+    "overrideConfigFile": "./eslint.config.mjs"
+  },
+  "eslint.useFlatConfig": true,
+  "javascript.validate.enable": true,
+  "typescript.validate.enable": true
+}

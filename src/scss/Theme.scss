@@ -1,0 +1,82 @@
+.l-player-container {
+  --oberplayer-primary-color: #FFF;
+
+  // timeline
+  --oberplayer-rail-background: #FFF;
+  --oberplayer-rail-color: #E52175;
+
+  // button
+  --oberplayer-button-background: #FFF;
+  --oberplayer-button-color: #000;
+
+  // overlay
+  --oberplayer-background: rgb(0 0 0 / 70%);
+
+  // spacing
+  --oberplayer-spacing-vertical: 10px;
+  --oberplayer-spacing-horizontal: 10px;
+
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+  font-size: 16px;
+  color: var(--oberplayer-primary-color);
+
+  *:focus-visible {
+    outline: 1px solid var(--oberplayer-primary-color);
+  }
+
+  path {
+    fill: var(--oberplayer-primary-color);
+  }
+
+  .rangeslider {
+    .rail {
+      background-color: var(--oberplayer-rail-background);
+    }
+  
+    .current {
+      background: var(--oberplayer-rail-color);
+    }
+  }
+  
+
+  google-cast-launcher {
+    fill: var(--oberplayer-primary-color);
+
+    --disconnected-color: var(--oberplayer-primary-color);
+    --connected-color: var(--oberplayer-primary-color);
+  }
+
+  .l-controls {
+    transition: 0.3s;
+    background-image: linear-gradient(0deg, rgb(21 21 21 / 34%) 0%, rgb(21 21 21 / 0%) 40%, rgb(21 21 21 / 0%) 50%, rgb(21 21 21 / 34%) 100%);
+  }
+
+  .gotobutton,
+  .adSkipButton {
+    background: var(--oberplayer-background);
+  }
+
+  .is--hover::after {
+    background: var(--oberplayer-background);
+    color:  var(--oberplayer-color);
+  }
+
+  .overlay {
+    background: var(--oberplayer-background);
+  }
+
+  output {
+    background: var(--oberplayer-background);
+  }
+
+  .play {
+    background: var(--oberplayer-background);
+  }
+
+  .message {
+    button {
+      background: var(--oberplayer-button-background);
+      color: var(--oberplayer-button-color);
+    }
+  }
+}

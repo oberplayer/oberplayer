@@ -1,0 +1,8 @@
+dist/**/*.js
+dist/**/*.css
+dist/**/*.map
+meta.json
+node_modules
+.DS_Store
+.npmrc
+release-free.js

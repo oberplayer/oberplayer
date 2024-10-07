@@ -1,0 +1,303 @@
+.l-player-container {
+  .complete.icons,
+  .loader.icons {
+    display: none;
+    align-items: center;
+  }
+
+  .icons.hd,
+  .icons.hdr,
+  .icons.uhd {
+    cursor: auto;
+  }
+
+  .live {
+    padding: calc(var(--oberplayer-spacing-vertical) * 0.8);
+
+    .live--redcircle {
+      margin-right: 5px;
+    }
+  }
+
+  .time {
+    padding: 0 calc(var(--oberplayer-spacing-vertical) * 0.8);
+  }
+
+  .volume {
+    display: flex;
+    align-items: center;
+
+    .volume-slider {
+      width: 0;
+      transition: all 0.12s ease-out, left 0s;
+
+      .rangeslider {
+        height: 24px;
+        display: flex;
+        align-items: center;
+        padding: calc(var(--oberplayer-spacing-vertical) * 0.8) 0;
+      }
+
+      .rail,
+      .current {
+        height: 4px;
+      }
+
+      output {
+        display: none !important;
+      }
+    }
+  }
+
+  .timeline {
+    display: flex;
+    margin: 0 var(--oberplayer-spacing-vertical);
+    padding: 13px 0 1px;
+  }
+
+  .icons {
+    cursor: pointer;
+    padding: var(--oberplayer-spacing-vertical);
+    display: grid;
+  }
+
+  google-cast-launcher {
+    height: 24px;
+  }
+
+  div.closeButton {
+    position: absolute;
+    right: 0;
+    top: 0;
+
+    svg {
+      margin: 8px
+    }
+  }
+
+  .l-settings {
+    position: absolute;
+    display: none;
+    right: 10px;
+    bottom: calc(var(--oberplayer-spacing-vertical) * 6.6);
+    max-height: 156px;
+    overflow-y: scroll !important;
+    grid-template-columns: auto auto auto;
+
+    p {
+      font-size: 1em;
+      letter-spacing: inherit !important;
+      display: flex;
+      padding: 0;
+      align-items: center;
+    }
+
+    select {
+      max-width: 10em;
+      text-overflow: ellipsis;
+      background: transparent;
+
+      option {
+        background: #4D4D4F;
+      }
+    }
+
+    .icons {
+      padding: initial;
+    }
+
+    svg {
+      margin: 0 8px;
+    }
+
+    .close {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+    }
+  }
+
+  .play {
+    display: flex;
+    align-self: center;
+    padding: calc(var(--oberplayer-spacing-vertical) * 2.5);
+    border-radius: 100%;
+  }
+
+  .tooltip {
+    /* needed for tooltiop placement */
+    position: relative;
+
+    &.is--hover::after {
+      text-align: center;
+      bottom: calc(var(--oberplayer-spacing-vertical) * 4 + 18px);
+      padding: calc(var(--oberplayer-spacing-vertical) / 2);
+      border-radius: 4px;
+      overflow: auto;
+      content: attr(aria-label);
+      white-space: nowrap;
+      left: 50%;
+      transform: translateX(-50%);
+      position: absolute;
+      pointer-events: none;
+    }
+
+    &--right.is--hover::after {
+      right: calc(var(--oberplayer-spacing-horizontal));
+      left: auto;
+      transform: none;
+    }
+
+    &--left.is--hover::after {
+      left: calc(var(--oberplayer-spacing-horizontal));
+      transform: none;
+    }
+  }
+
+  .overlay {
+    padding: calc(var(--oberplayer-spacing-vertical) * 0.8);
+    border-radius: 4px;
+    overflow: auto;
+  }
+
+  .rangeslider {
+    cursor: pointer;
+
+    .rail {
+      width: 100%;
+      display: block;
+      height: 4px;
+      position: relative;
+    }
+
+    .hover {
+      display: none;
+      position: absolute;
+      background: #ccc;
+      height: 4px;
+      pointer-events: none;
+    }
+
+    .current {
+      position: absolute;
+      height: 4px;
+      pointer-events: none;
+    }
+
+    &.is--hover {
+      > div,
+      > div > div {
+        opacity: 1;
+      }
+
+      .hoverInfo {
+        display: block;
+        pointer-events: none;
+      }
+
+      output {
+        display: inline;
+      }
+
+      .hover {
+        display: block;
+      }
+    }
+
+    output {
+      white-space: nowrap;
+      padding: calc(var(--oberplayer-spacing-vertical) / 2) calc(var(--oberplayer-spacing-horizontal) / 2);
+      border-radius: 4px;
+    }
+
+    .chapterMarker {
+      width: 2px;
+      height: 4px;
+      background-color: black;
+      position: absolute;
+    }
+
+    .hoverInfo {
+      display: none;
+      text-align: center;
+      position: absolute;
+      z-index: 1;
+      bottom: calc(var(--oberplayer-spacing-vertical) * 4 + 30px);
+    }
+
+    .thumb {
+      border: 1px solid white;
+      background-color: black;
+      margin: 0 auto 15px;
+    }
+  }
+
+  .message {
+    h2 {
+      margin: 0 0 calc(var(--oberplayer-spacing-vertical));
+      text-overflow: initial;
+      white-space: initial;
+      text-align: center;
+    }
+
+    button {
+      padding: var(--oberplayer-spacing-vertical) calc(var(--oberplayer-spacing-vertical) * 1.5);
+      margin: 20px 10px;
+      background-color: #fff;
+      color: #000;
+      cursor: pointer;
+      border-radius: 2px;
+      font-size: 16px;
+      font-weight: 500;
+      min-width: 23%;
+    }
+
+    p {
+      font-weight: 300;
+      font-size: 1.25em;
+      line-height: 1.2em;
+      text-align: center;
+      text-overflow: clip;
+      width: 100%;
+      white-space: normal;
+    }
+
+    svg {
+      margin-right: 5px;
+    }
+
+    > div {
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+      width: 100%;
+    }
+
+    .rightsFrom,
+    .restrictions {
+      h2, span {
+        font-size: 4em;
+        margin: 0.2em 0.1em;
+        line-height: 1em;
+        padding: 0;
+      }
+
+      span {
+        font-size: 3em;
+      }
+
+      .hours {
+        grid-template-columns: auto auto auto auto auto;
+        display: grid;
+        align-items: center;
+        text-align: center;
+        column-gap: 5px;
+
+        .unit {
+          font-size: 1.25em;
+          font-weight: 200;
+        }
+      }
+    }
+  }
+}

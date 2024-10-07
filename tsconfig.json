@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact", // import jsx without extension
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "resolveJsonModule": true, // json import
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "typeRoots": ["./src/types"],
+    "lib": ["es2021", "dom"]
+  },
+  "include": ["src/**/*"],
+  "files": ["src/types/types.d.ts"],
+}
