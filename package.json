@@ -1,7 +1,7 @@
 {
   "name": "@oberplayer-free/oberplayer",
   "author": "Thibaut Lion LID",
-  "version": "3.0.2",
+  "version": "3.0.5",
   "types": "oberplayer.d.ts",
   "files": [
     "dist",
