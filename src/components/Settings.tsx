@@ -79,7 +79,7 @@ export default function Settings({ eventDomElement, api, isTouchDevice, onClickS
           </select>
         </>
       )}
-      {!isChromecasting && videoTracks.length > 0 && (
+      {!isChromecasting && videoTracks && videoTracks.length > 0 && (
         <>
           <span className="icons is--touch-hidden">
             <Tune />
@@ -102,7 +102,7 @@ export default function Settings({ eventDomElement, api, isTouchDevice, onClickS
           </select>
         </>
       )}
-      {audioTracks.length > 0 && (
+      {audioTracks && audioTracks && audioTracks.length > 0 && (
         <>
           <span className="icons is--touch-hidden">
             <HeadPhones />
@@ -128,7 +128,7 @@ export default function Settings({ eventDomElement, api, isTouchDevice, onClickS
           </select>
         </>
       )}
-      {textTracks.length > 0 && (
+      {textTracks && textTracks.length > 0 && (
         <>
           <span className="icons is--touch-hidden">
             <Subtitles />

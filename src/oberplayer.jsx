@@ -275,6 +275,11 @@ class Oberplayer {
       this.vastPlugin.onUnload();
     }
 
+    // destroy vtt plugin
+    if (this.vttPlugin) {
+      this.vttPlugin.onUnload();
+    }
+
     // load has been probably been called without setup() before
     if (!this.isSetup) {
       // error text is hardcoded has i18n module is not instantiated at this step
