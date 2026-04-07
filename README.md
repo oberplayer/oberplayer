@@ -22,7 +22,7 @@ Ober Player is the missing abstraction layer for a ready-to-use video player: a 
 - **Clean documentation:** Comprehensive and well-organized documentation, making it easy to implement and troubleshoot.
 - **Complete functions and events API:** Control the player, interact with your web app, and integrate reporting tools with our API.
 
-[See more details and premium features here](https://www.oberplayer.com/features)
+[See all features here](https://www.oberplayer.com/features)
 
 ## Using Wordpress ? We've got a plugin for you
 
@@ -51,7 +51,7 @@ You can also include oberplayer.js as a browser script by adding a script tag (d
 
 ### As a package through NPM
 ```bash
-npm install @oberplayer-free/oberplayer
+npm install @oberplayer/oberplayer
 ```
 
 ### With our CDN (global script version)
@@ -80,5 +80,5 @@ For full API documentation, check out the [API Docs](https://www.oberplayer.com/
 
 ## License
 
-This project is licensed under the [Creative Commons Attribution-NonCommercial (CC BY-NC)](./LICENSE) license.
+This project is licensed under the [MIT License](./LICENSE).
 
