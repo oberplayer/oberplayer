@@ -1,11 +1,16 @@
 {
-  "name": "@oberplayer-free/oberplayer",
+  "name": "@oberplayer/oberplayer",
   "author": "Thibaut Lion LID",
-  "version": "3.0.6",
+  "version": "4.1.0",
   "types": "oberplayer.d.ts",
+  "sideEffects": [
+    "*.css",
+    "*.scss"
+  ],
   "files": [
-    "dist",
-    "player.d.ts"
+    "dist/**/*.js",
+    "dist/**/*.css",
+    "oberplayer.d.ts"
   ],
   "exports": {
     ".": {
@@ -42,10 +47,11 @@
     "bundle:distant:cjs": "node esbuild.distant.cjs.mjs"
   },
   "devDependencies": {
+    "@types/node-polyglot": "^2.5.0",
     "@types/react": "^18.3.10",
     "@types/react-dom": "^18.3.0",
-    "@typescript-eslint/eslint-plugin": "^8.5.0",
-    "@typescript-eslint/parser": "^8.5.0",
+    "@typescript-eslint/eslint-plugin": "^8.58.0",
+    "@typescript-eslint/parser": "^8.58.0",
     "concurrently": "^9.0.1",
     "esbuild": "^0.23.1",
     "esbuild-config": "^1.0.1",
@@ -64,7 +70,10 @@
   "homepage": "https://github.com/oberplayer/oberplayer#readme",
   "description": "",
   "dependencies": {
-    "@types/node-polyglot": "^2.5.0",
+    "@dailymotion/vast-client": "^6.0.1",
+    "@dailymotion/vmap": "^3.3.1",
+    "dompurify": "^3.3.3",
+    "logrocket": "^8.1.2",
     "node-polyglot": "^2.5.0",
     "preact": "^10.23.2"
   }

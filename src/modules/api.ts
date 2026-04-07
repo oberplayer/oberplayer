@@ -1,6 +1,6 @@
-import { PlayerApi } from '@oberplayer-free/oberplayer';
+import { PlayerApi } from '@oberplayer/oberplayer';
 import { toggleFullScreen } from './fullscreen';
-
+import { setUserPreferences } from '../premium/userPreferences';
 
 export default function mapApi(api:PlayerApi, isAdPlayer:PlayerState["isAdPlayer"], domElement: PlayerAttributes["domElement"]) {
   const videoTag = domElement?.querySelector('video') as HTMLVideoElement;
@@ -25,14 +25,18 @@ export default function mapApi(api:PlayerApi, isAdPlayer:PlayerState["isAdPlayer
     api.setVolume = (volume, shouldSetUserPrefs = false) => {
       if (!Number.isNaN(volume) && volume >= 0 && volume <= 1) {
         videoTag.volume = volume;
-        
+        if (shouldSetUserPrefs) {
+          setUserPreferences('volume', volume);
+        }
       }
     };
     api.getDuration = () => videoTag.duration;
     api.getMute = () => videoTag.muted;
     api.setMute = (muted, shouldSetUserPrefs = false) => {
       videoTag.muted = muted;
-      
+      if (shouldSetUserPrefs) {
+        setUserPreferences('muted', muted);
+      }
     };
     api.toggleMute = (shouldSetUserPrefs) => {
       api.setMute(!api.getMute(), shouldSetUserPrefs);

@@ -1,17 +1,33 @@
 import { log, isAppleDevice, isNumeric } from './lib';
 import i18n from './i18n';
 import { triggerSolidEvent, solidEvents } from './events';
-
+import { getUserPreferences } from '../premium/userPreferences';
 import { VideoProvider } from './videoProvider';
+import {
+  getVideoBandwidthFromVariant,
+  sortByHeightThenByBandwidth,
+  getHumanReadableBandWidthFromBits,
+  getResolutionLabelFromWidth,
+} from './video-utils';
 import { ErrorIcon } from '../components/Icon';
-import { PlaylistEntry } from '@oberplayer-free/oberplayer';
+import { PlaylistEntry } from '@oberplayer/oberplayer';
+
+function getShakaErrorMessage(code: number): string | undefined {
+  let errorMessage;
+  for (const k in globalThis.shaka.util.Error.Code) {
+    if (globalThis.shaka.util.Error.Code[k] === code) {
+      errorMessage = k;
+    }
+  }
+  return errorMessage;
+}
 
 class ShakaProvider extends VideoProvider {
-  private options: ShakaProviderOptions;
+  private options: VideoProviderOptions;
   private shouldDisplayBandwidth: boolean;
   shakaPlayer: ShakaPlayer;
 
-  constructor(options: ShakaProviderOptions) {
+  constructor(options: VideoProviderOptions) {
     super();
     // @ts-expect-error 
     this.shakaPlayer = {};
@@ -54,7 +70,7 @@ class ShakaProvider extends VideoProvider {
     return this.shakaPlayer.detach();
   }
 
-  async load(videoUrl: string, drm: PlayerProps['drm'], videoProviderOptions?: PlayerProps['videoProviderOptions']) {
+  async load(videoUrl: string, drm?: PlayerProps['drm'], videoProviderOptions?: PlayerProps['videoProviderOptions']) {
     if (globalThis.bpdebug) log('info', `Now loading ${videoUrl || this.getVideoUrl()}`);
 
     this.options.videoUrl = videoUrl;
@@ -120,12 +136,30 @@ class ShakaProvider extends VideoProvider {
       );
 
       if (variants.length > 0 || isAppleDevice()) {
-        
+        if (getUserPreferences('language.audioTrack')) {
+          const audioRoles = getUserPreferences('audioRoles') as string[];
+            this.setAudioTrack(
+              getUserPreferences('language.audioTrack') as string,
+              audioRoles.length > 0 ? audioRoles[0] : undefined,
+            );
+        }
+
+        if (getUserPreferences('abr') === false) {
+          this.setVideoTrack(getUserPreferences('bandwidth') as string);
+        }
 
         const activeVariant = this.getActiveVariant();
 
         if (this.shakaPlayer.getTextTracks().length > 0) {
-          
+          if (getUserPreferences('language.textTrack')) {
+            const roles = getUserPreferences('roles') as string[];
+            this.setTextTrack(
+              getUserPreferences('language.textTrack') as string,
+              roles.length > 0 ? roles : undefined,
+            );
+          } else {
+            this.setForcedTextTrack();
+          }
 
           textTracks.push({
             id: 'none',            
@@ -206,10 +240,10 @@ class ShakaProvider extends VideoProvider {
             selected: false,
           });
 
-          const orderedReducedVariants = reducedVariants.sort(VideoProvider.sortByHeightThenByBandwidth);
+          const orderedReducedVariants = reducedVariants.sort(sortByHeightThenByBandwidth);
           this.shouldDisplayBandwidth = false;
           orderedReducedVariants.forEach((variant: Variant) => {
-            if (this.shakaPlayer.getVariantTracks().filter((track: Variant) => VideoProvider.getResolutionLabelFromWidth(track.width) === VideoProvider.getResolutionLabelFromWidth(variant.width)).length > 1) {
+            if (this.shakaPlayer.getVariantTracks().filter((track: Variant) => getResolutionLabelFromWidth(track.width) === getResolutionLabelFromWidth(variant.width)).length > 1) {
               this.shouldDisplayBandwidth = true;
             }
           });
@@ -219,13 +253,13 @@ class ShakaProvider extends VideoProvider {
             const videoTrack: VideoTrack = {
               width: variant.width,
               height: variant.height,
-              bitrate: VideoProvider.getVideoBandwidthFromVariant(variant),
+              bitrate: getVideoBandwidthFromVariant(variant),
               name: name || '',
               label: name || '',
               selected: this.shakaPlayer.getConfiguration().abr.enabled === false
-              ? VideoProvider.getVideoBandwidthFromVariant(variant) === VideoProvider.getVideoBandwidthFromVariant(activeVariant) && variant.height === activeVariant.height
+              ? getVideoBandwidthFromVariant(variant) === getVideoBandwidthFromVariant(activeVariant) && variant.height === activeVariant.height
               : false,
-              id: VideoProvider.getVideoBandwidthFromVariant(variant).toString(),
+              id: getVideoBandwidthFromVariant(variant).toString(),
               hd: isHd,
               uhd: isUhd,
               hdr: isHdr
@@ -242,7 +276,6 @@ class ShakaProvider extends VideoProvider {
 
     // Vérification de type personnalisée pour ShakaError
     function isShakaError(error: unknown): error is ShakaError {
-      console.info('error', error)
       return (
         typeof error === 'object' &&
         error !== null &&
@@ -266,7 +299,7 @@ class ShakaProvider extends VideoProvider {
           if (!this.options.isAdPlayer === true) {
             this.options.displayMessage({
               icon: ErrorIcon(),
-              text: `${error.message}: ${VideoProvider.getShakaErrorMessage(error.code)}`,
+              text: `${error.message}: ${getShakaErrorMessage(error.code)}`,
             });
           }
         }
@@ -276,7 +309,12 @@ class ShakaProvider extends VideoProvider {
     // set volume and muted
     let volumeToSet = this.options.volume as number;
     let mutedToSet = this.options.muted as boolean;
-    
+    if(getUserPreferences('volume')) {
+      volumeToSet = getUserPreferences('volume') as number;
+    }
+    if(getUserPreferences('muted')) {
+      mutedToSet = getUserPreferences('muted') as boolean;
+    }
     this.options.api.setVolume(volumeToSet);
     this.options.api.setMute(mutedToSet);
 
@@ -305,12 +343,12 @@ class ShakaProvider extends VideoProvider {
       } else if (variant.width >= 1920) {
         isHd = true;
       }
-      bandwidth = VideoProvider.getVideoBandwidthFromVariant(variant);
+      bandwidth = getVideoBandwidthFromVariant(variant);
       // audio only ?
       if (!variant.width) {
-        name = `${this.shouldDisplayBandwidth ? `${VideoProvider.getHumanReadableBandWidthFromBits(bandwidth)}` : ''}`;
+        name = `${this.shouldDisplayBandwidth ? `${getHumanReadableBandWidthFromBits(bandwidth)}` : ''}`;
       } else {
-        name = `${VideoProvider.getResolutionLabelFromWidth(variant.width)}${this.shouldDisplayBandwidth ? ` @ ${VideoProvider.getHumanReadableBandWidthFromBits(bandwidth)}` : ''}`;
+        name = `${getResolutionLabelFromWidth(variant.width)}${this.shouldDisplayBandwidth ? ` @ ${getHumanReadableBandWidthFromBits(bandwidth)}` : ''}`;
       }
     }
 
@@ -364,7 +402,7 @@ class ShakaProvider extends VideoProvider {
       const activeVariant = this.getActiveVariant();
       const variantToSelect = this.shakaPlayer
         .getVariantTracks()
-        .find((variant: Variant) => VideoProvider.getVideoBandwidthFromVariant(variant) === parseInt(videoBandwidth, 10) && variant.label === activeVariant.label);
+        .find((variant: Variant) => getVideoBandwidthFromVariant(variant) === parseInt(videoBandwidth, 10) && variant.label === activeVariant.label);
 
       if (variantToSelect) {
         this.shakaPlayer.configure({ abr: { enabled: false } });
@@ -372,7 +410,7 @@ class ShakaProvider extends VideoProvider {
         triggerSolidEvent(
           this.options.eventDomElement,
           solidEvents.VIDEOTRACKASKED,
-          { height: variantToSelect.height, width: variantToSelect.width, bandwidth: VideoProvider.getVideoBandwidthFromVariant(variantToSelect), abr: false },
+          { height: variantToSelect.height, width: variantToSelect.width, bandwidth: getVideoBandwidthFromVariant(variantToSelect), abr: false },
           this.options.isAdPlayer,
         );
       }
@@ -387,7 +425,7 @@ class ShakaProvider extends VideoProvider {
   destroy() {
     if (globalThis.bpdebug) log('info', `Now destroying provider shaka ${this.getVideoUrl()}`);
 
-    this.EmptyVideoData();
+    this.clearTrackData();
     this.shakaPlayer.resetConfiguration();
     this.shakaPlayer.unload();
 
@@ -466,7 +504,7 @@ class ShakaProvider extends VideoProvider {
     });
   }
 
-  EmptyVideoData() {
+  clearTrackData() {
     triggerSolidEvent(this.options.eventDomElement, solidEvents.VIDEOTRACKS, {}, this.options.isAdPlayer);
     triggerSolidEvent(this.options.eventDomElement, solidEvents.AUDIOTRACKS, {}, this.options.isAdPlayer);
     triggerSolidEvent(this.options.eventDomElement, solidEvents.TEXTTRACKS, {}, this.options.isAdPlayer);

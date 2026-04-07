@@ -11,7 +11,7 @@ await esbuild.build(Object.assign(
     format: 'cjs',
     outdir: './dist/cjs',
     define: {
-      ENV:  JSON.stringify('local')
+      ENV:  JSON.stringify('distant')
     },
   },
 )).then(() => console.log('⚡ Styles & Scripts Compiled! ⚡ '))

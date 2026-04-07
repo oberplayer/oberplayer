@@ -10,11 +10,14 @@ import { AutoRenew, Refresh, ErrorIcon } from './Icon.tsx';
 import i18n from '../modules/i18n.ts';
 import Controls from './Controls.tsx';
 import ShakaProvider from '../modules/shaka.js';
+import { VideoProvider } from '../modules/videoProvider.js';
 import { log } from '../modules/lib.js';
-import { PlayerApi, checkResult } from '@oberplayer-free/oberplayer';
+import { PlayerApi, checkResult } from '@oberplayer/oberplayer';
 import { getCdnBaseUrl } from '../modules/lib.ts';
 import { solidEvents } from '../modules/events.ts'; // Import from your type definitions
-
+import { handleChecks } from '../premium/checks/checks.tsx';
+import { handleUserPreferences } from '../premium/userPreferences.js';
+import { sendPlayHit } from './Player.lib.ts';
 
 export default class Player extends Component<PlayerProps, PlayerState> implements PlayerAttributes, PlayerFunctions {
   ref: RefObject<HTMLDivElement> | null = null;
@@ -31,10 +34,32 @@ export default class Player extends Component<PlayerProps, PlayerState> implemen
   singleClickActionTimeOut: PlayerAttributes["singleClickActionTimeOut"];
   shouldPlayOnRelease: PlayerAttributes["shouldPlayOnRelease"];
   handleChecksTimeout: PlayerAttributes["handleChecksTimeout"];
+  handleFirstPlay: EventListener;
+  handleTime: EventListener;
+  handleMute: EventListener;
+  handleMetadata: EventListener;
+  handleCast: EventListener;
+  handlePause: EventListener;
+  handlePlay: EventListener;
+  handleAdMetadata: EventListener;
+  handleAdPause: EventListener;
+  handleAdPlay: EventListener;
+  // setListeners handlers (assigned in setListeners, called in componentDidMount)
+  slFullscreen!: EventListener;
+  slPause!: EventListener;
+  slPlay!: EventListener;
+  slAdPlay!: EventListener;
+  slSeeking!: EventListener;
+  slSeeked!: EventListener;
+  slEnded!: EventListener;
+  slBuffering!: EventListener;
+  slVideoType!: EventListener;
+  slMetadata!: EventListener;
+  slAdMetadata!: EventListener;
 
   constructor(props:PlayerProps) {
     super(props);
-    const { eventDomElement, autoplay, muted, restrictions, rights, geolocation, entitlements, chaptersVttUrl, thumbnailsVttUrl, token } = this.props as PlayerProps;
+    const { eventDomElement, autoplay, muted, restrictions, rights, geolocation, chaptersVttUrl, thumbnailsVttUrl } = this.props as PlayerProps;
     // use "isAdPlayer" as "isAd" is hide by adBlock :)
     this.state = {
       // will apply class on container
@@ -55,44 +80,45 @@ export default class Player extends Component<PlayerProps, PlayerState> implemen
       duration: 0,
     };
 
-    
-    eventDomElement.addEventListener(solidEvents.TIME, (evt) => {
-      if (entitlements && entitlements.goToButton) {
-        const customEvent = evt as CustomEvent
-        this.setState({ goToButtonData: this.getGoToButtonData(customEvent.detail.currentTime) });
-      }
-    });
-    eventDomElement.addEventListener(solidEvents.MUTE, (evt) => {
-      const customEvent = evt as CustomEvent;
-      this.setState({ isMuted: customEvent.detail.muted });
-    });
-    eventDomElement.addEventListener(solidEvents.METADATA, (evt) => {
-      const customEvent = evt as CustomEvent
-      this.setState({ duration: customEvent.detail.duration });
-    });
-    eventDomElement.addEventListener(solidEvents.CAST, (evt) => {
-      const customEvent = evt as CustomEvent
-      this.setState({ isChromecasting: customEvent.detail.active });
-    });
-    eventDomElement.addEventListener(solidEvents.PAUSE, () => {
-      this.setState({ isPaused: true });
-      this.setState({ isControlsVisible: true });
-    });
-    eventDomElement.addEventListener(solidEvents.PLAY, () => {
-      this.setState({ isPaused: false });
-      this.setState({ isControlsVisible: true });
+    // bind constructor listeners so they can be removed in destroy()
+    this.handleFirstPlay = (evt: Event) => {
+      sendPlayHit((evt as CustomEvent).detail.videoUrl as string);
+    };
+    this.handleTime = (evt: Event) => {
+      this.setState({ goToButtonData: this.getGoToButtonData((evt as CustomEvent).detail.currentTime) });
+    };
+    this.handleMute = (evt: Event) => {
+      this.setState({ isMuted: (evt as CustomEvent).detail.muted });
+    };
+    this.handleMetadata = (evt: Event) => {
+      this.setState({ duration: (evt as CustomEvent).detail.duration });
+    };
+    this.handleCast = (evt: Event) => {
+      this.setState({ isChromecasting: (evt as CustomEvent).detail.active });
+    };
+    this.handlePause = () => {
+      this.setState({ isPaused: true, isControlsVisible: true });
+    };
+    this.handlePlay = () => {
+      this.setState({ isPaused: false, isControlsVisible: true });
       this.resetMouseEnterTimeout();
-    });
-    eventDomElement.addEventListener(`ad${solidEvents.METADATA}`, (evt) => {
-      const customEvent = evt as CustomEvent
-      this.setState({ duration: customEvent.detail.duration });
-    });
-    eventDomElement.addEventListener(`ad${solidEvents.PAUSE}`, () => {
-      this.setState({ isPaused: true });
-    });
-    eventDomElement.addEventListener(`ad${solidEvents.PLAY}`, () => {
-      this.setState({ isPaused: false });
-    });
+    };
+    this.handleAdMetadata = (evt: Event) => {
+      this.setState({ duration: (evt as CustomEvent).detail.duration });
+    };
+    this.handleAdPause = () => { this.setState({ isPaused: true }); };
+    this.handleAdPlay = () => { this.setState({ isPaused: false }); };
+
+    eventDomElement.addEventListener(solidEvents.FIRSTPLAY, this.handleFirstPlay);
+    eventDomElement.addEventListener(solidEvents.TIME, this.handleTime);
+    eventDomElement.addEventListener(solidEvents.MUTE, this.handleMute);
+    eventDomElement.addEventListener(solidEvents.METADATA, this.handleMetadata);
+    eventDomElement.addEventListener(solidEvents.CAST, this.handleCast);
+    eventDomElement.addEventListener(solidEvents.PAUSE, this.handlePause);
+    eventDomElement.addEventListener(solidEvents.PLAY, this.handlePlay);
+    eventDomElement.addEventListener(`ad${solidEvents.METADATA}`, this.handleAdMetadata);
+    eventDomElement.addEventListener(`ad${solidEvents.PAUSE}`, this.handleAdPause);
+    eventDomElement.addEventListener(`ad${solidEvents.PLAY}`, this.handleAdPlay);
     this.ref = createRef();
     this.api = {} as PlayerApi;
     // use for touch device only, means when a click action is possible or not
@@ -130,7 +156,7 @@ export default class Player extends Component<PlayerProps, PlayerState> implemen
   });
 
   async componentDidMount() {
-    const { entitlements, videoUrl } = this.props;
+    const { videoUrl } = this.props;
 
     this.domElement = this.ref?.current;
 
@@ -176,13 +202,10 @@ export default class Player extends Component<PlayerProps, PlayerState> implemen
     // listener to manage click outside the player actions
     document.addEventListener('click', this.handleGlobalClick);
 
-    if (!entitlements) {
-      await this.makeChecksAndLoadVideo();
-    } else {
-      
-      // all tests ok let's go
-      await this.makeChecksAndLoadVideo();
-    }
+    handleUserPreferences(this.eventDomElement);
+    this.eventDomElement.addEventListener(solidEvents.TRYINGTOPLAY, this.triggerReadyforpreroll);
+    this.eventDomElement.addEventListener(solidEvents.BEFOREENDED, this.triggerReadyforpostroll);
+    await this.makeChecksAndLoadVideo();
   }
 
   async UNSAFE_componentWillReceiveProps() {
@@ -230,7 +253,7 @@ export default class Player extends Component<PlayerProps, PlayerState> implemen
         this.setState({ restrictions, rights, geolocation, chaptersVttUrl, thumbnailsVttUrl, isAdPlayer: false }, async () => {
           // has to be tested as a video could have not be played (restrictions case)
           if (this.videoProvider) {
-            this.videoProvider.EmptyVideoData();
+            this.videoProvider.clearTrackData();
 
             // detach the current video (detach is ok if there is a new video to come)
             if (videoUrl) {
@@ -271,7 +294,8 @@ export default class Player extends Component<PlayerProps, PlayerState> implemen
   makeChecksAndLoadVideo = async () => {
     const { isAdPlayer } = this.state;
     const { videoUrl, drm, videoProviderOptions, aspectRatio, } = this.props;
-    
+    const { lang } = this.props;
+    const { rights, restrictions } = this.state;
     let blockingChecks: checkResult[] = [];
 
     // apply ratio
@@ -287,7 +311,15 @@ export default class Player extends Component<PlayerProps, PlayerState> implemen
 
     mapApi(this.api, isAdPlayer, this.domElement);
 
-    
+    blockingChecks = await handleChecks({
+      checkProps: { rights, restrictions },
+      displayMessage: this.displayMessage,
+      handleChecksTimeout: this.handleChecksTimeout,
+      handleAccept: this.handleAccept,
+      handleDecline: this.handleDecline,
+      handleRightsOk: this.handleRightsOk,
+      lang,
+    });
 
     if (blockingChecks.length === 0) {
       // let's be honest, I don't know why I must pass videoProviderOptions as a deep copy, but has to 🤷🏼‍♂️
@@ -365,6 +397,31 @@ export default class Player extends Component<PlayerProps, PlayerState> implemen
 
     this.eventDomElement.removeEventListener(solidEvents.TRYINGTOPLAY, this.triggerReadyforpreroll);
     this.eventDomElement.removeEventListener(solidEvents.BEFOREENDED, this.triggerReadyforpostroll);
+
+    // remove constructor listeners
+    this.eventDomElement.removeEventListener(solidEvents.FIRSTPLAY, this.handleFirstPlay);
+    this.eventDomElement.removeEventListener(solidEvents.TIME, this.handleTime);
+    this.eventDomElement.removeEventListener(solidEvents.MUTE, this.handleMute);
+    this.eventDomElement.removeEventListener(solidEvents.METADATA, this.handleMetadata);
+    this.eventDomElement.removeEventListener(solidEvents.CAST, this.handleCast);
+    this.eventDomElement.removeEventListener(solidEvents.PAUSE, this.handlePause);
+    this.eventDomElement.removeEventListener(solidEvents.PLAY, this.handlePlay);
+    this.eventDomElement.removeEventListener(`ad${solidEvents.METADATA}`, this.handleAdMetadata);
+    this.eventDomElement.removeEventListener(`ad${solidEvents.PAUSE}`, this.handleAdPause);
+    this.eventDomElement.removeEventListener(`ad${solidEvents.PLAY}`, this.handleAdPlay);
+
+    // remove setListeners handlers
+    this.eventDomElement.removeEventListener(solidEvents.FULLSCREEN, this.slFullscreen);
+    this.eventDomElement.removeEventListener(solidEvents.PAUSE, this.slPause);
+    this.eventDomElement.removeEventListener(solidEvents.PLAY, this.slPlay);
+    this.eventDomElement.removeEventListener('adplay', this.slAdPlay);
+    this.eventDomElement.removeEventListener(solidEvents.SEEKING, this.slSeeking);
+    this.eventDomElement.removeEventListener(solidEvents.SEEKED, this.slSeeked);
+    this.eventDomElement.removeEventListener(solidEvents.ENDED, this.slEnded);
+    this.eventDomElement.removeEventListener(solidEvents.BUFFERING, this.slBuffering);
+    this.eventDomElement.removeEventListener(solidEvents.VIDEOTYPE, this.slVideoType);
+    this.eventDomElement.removeEventListener(solidEvents.METADATA, this.slMetadata);
+    this.eventDomElement.removeEventListener(`ad${solidEvents.METADATA}`, this.slAdMetadata);
 
     // destroy checks timeout
     clearTimeout(this.handleChecksTimeout);
@@ -492,7 +549,7 @@ export default class Player extends Component<PlayerProps, PlayerState> implemen
       isDragging,
       isMuted,
     } = this.state;
-    const { isTouchDevice, metadata, aspect, onClickPrevious, onClickNext, color, entitlements } = this.props;
+    const { isTouchDevice, metadata, aspect, onClickPrevious, onClickNext, color } = this.props;
 
     // calculate isChromeless
     const isChromeless = aspect !== 'player';
@@ -505,7 +562,7 @@ export default class Player extends Component<PlayerProps, PlayerState> implemen
       throw new Error('varObj is not an object');
     };
     const stateToClassName = (state: unknown, name: string) => {
-      return state ? `is--${name.substr(2)}` : '';
+      return state ? `is--${name.substring(2)}` : '';
     };
     const classList = [];
     classList.push(
@@ -597,7 +654,6 @@ export default class Player extends Component<PlayerProps, PlayerState> implemen
             isHovered={isHovered}
             vttThumbnailsData={vttThumbnailsData}
             vttChaptersData={vttChaptersData}
-            entitlements={entitlements}
             eventDomElement={this.eventDomElement}
             api={this.api}
             setShouldPlayOnRelease={this.setShouldPlayOnRelease}
@@ -668,26 +724,26 @@ export default class Player extends Component<PlayerProps, PlayerState> implemen
     this.resetMouseEnterTimeout();
   }
 
-  handleProvider(): Promise<ShakaProvider> {
+  async handleProvider(): Promise<VideoProvider> {
     if (globalThis.bpdebug) log('info', i18n.t('log.loaded.videoProvider'));
-    const { autoplay, muted, entitlements, videoUrl, volume } = this.props;
+    const { autoplay, muted, videoUrl, volume, videoProviderOptions } = this.props;
     const { isAdPlayer } = this.state;
-    return new ShakaProvider(
-      {
-        videoUrl,
-        videoTag: this.videoTag,
-        volume,
-        muted,
-        isAdPlayer,
-        autoplay,
-        entitlements,
-        displayMessage: this.displayMessage,
-        eventDomElement: this.eventDomElement,
-        domElement: this.domElement,
-        resetToPreview: this.resetToPreview,
-        api: this.api,
-      },
-    ).init();
+
+    const providerOptions: VideoProviderOptions = {
+      videoUrl,
+      videoTag: this.videoTag,
+      volume,
+      muted,
+      isAdPlayer,
+      autoplay,
+      displayMessage: this.displayMessage,
+      eventDomElement: this.eventDomElement,
+      domElement: this.domElement,
+      resetToPreview: this.resetToPreview,
+      api: this.api,
+    };
+
+    return new ShakaProvider(providerOptions).init();
   }
 
   handleOnMouseLeave = () => {
@@ -775,99 +831,39 @@ export default class Player extends Component<PlayerProps, PlayerState> implemen
   };
 
   setListeners() {
-    this.eventDomElement.addEventListener(solidEvents.FULLSCREEN, (evt) => {
-      const customEvent = evt as CustomEvent
-      this.setState({ isFullScreen: customEvent.detail.isFullScreen });
-    });
-    this.eventDomElement.addEventListener(solidEvents.PAUSE, () => {
-      this.setState({
-        isPlaying: false,
-        isPaused: true,
-      });
-    });
-    this.eventDomElement.addEventListener(solidEvents.PLAY, () => {
-      this.setState({
-        isComplete: false,
-        isWaitingForClick: false,
-        isBuffering: false,
-        isPaused: false,
-        isSeeking: false,
-        isPlaying: true,
-      });
-    });
-    this.eventDomElement.addEventListener('adplay', () => {
-      this.setState({
-        isComplete: false,
-        isWaitingForClick: false,
-        isBuffering: false,
-        isPaused: false,
-        isSeeking: false,
-        isPlaying: true,
-      });
-    });
-    this.eventDomElement.addEventListener(solidEvents.SEEKING, () => {
-      this.setState({
-        isSeeking: true,
-      });
-    });
-    this.eventDomElement.addEventListener(solidEvents.SEEKED, () => {
-      // exclusively for safari : it trigger seeking-seeked AFTER playing on start
-      this.setState({
-        isBuffering: false,
-        isSeeking: false,
-      });
-    });
-    this.eventDomElement.addEventListener(solidEvents.ENDED, () => {
-      this.setState({
-        isComplete: true,
-        isPaused: true,
-        isPlaying: false,
-        isBuffering: false,
-      });
-    });
-    this.eventDomElement.addEventListener(solidEvents.BUFFERING, () => {
-      // throttle isBuffering
-      setTimeout(() => {
-        // if it's still buffering after 500ms, then display the spinner
-        if (this.api.getState() === 'buffering') {
-          this.setState({
-            isBuffering: true,
-          });
-        }
-      }, 500);
-      this.setState({
-        isComplete: false, // case reload the video
-      });
-    });
-    this.eventDomElement.addEventListener(solidEvents.VIDEOTYPE, (evt) => {
-      const customEvent = evt as CustomEvent
+    const playingState = { isComplete: false, isWaitingForClick: false, isBuffering: false, isPaused: false, isSeeking: false, isPlaying: true };
+
+    this.slFullscreen = (evt: Event) => { this.setState({ isFullScreen: (evt as CustomEvent).detail.isFullScreen }); };
+    this.slPause = () => { this.setState({ isPlaying: false, isPaused: true }); };
+    this.slPlay = () => { this.setState(playingState); };
+    this.slAdPlay = () => { this.setState(playingState); };
+    this.slSeeking = () => { this.setState({ isSeeking: true }); };
+    this.slSeeked = () => { this.setState({ isBuffering: false, isSeeking: false }); };
+    this.slEnded = () => { this.setState({ isComplete: true, isPaused: true, isPlaying: false, isBuffering: false }); };
+    this.slBuffering = () => {
+      setTimeout(() => { if (this.api.getState() === 'buffering') this.setState({ isBuffering: true }); }, 500);
+      this.setState({ isComplete: false });
+    };
+    this.slVideoType = (evt: Event) => {
       const { restorePositionAfterAd, autoplay } = this.state;
-      if (customEvent.detail.isLive) {
-        this.setState({
-          isLive: true,
-        });
-      } else {
-        this.setState({
-          isLive: false,
-        });
-        if (autoplay && restorePositionAfterAd) {
-          this.api.seek(restorePositionAfterAd);
-        }
-      }
+      const isLive = (evt as CustomEvent).detail.isLive;
+      this.setState({ isLive });
+      if (!isLive && autoplay && restorePositionAfterAd) this.api.seek(restorePositionAfterAd);
       this.setState({ restorePositionAfterAd: undefined });
-    });
-    this.eventDomElement.addEventListener(solidEvents.METADATA, () => {
-      this.setState({
-        isReady: true,
-      });
-    });
-    this.eventDomElement.addEventListener(`ad${solidEvents.METADATA}`, () => {
-      this.setState({
-        isReady: true,
-      });
-    });
-    /* this.eventDomElement.addEventListener("NATIVEALL", (e) => {
-      log("info", `received native event : %c${e.detail.type}`, 'font-weight:bold;', `on ${ this.state.isAdPlayer ? 'ad Player' : 'regular Player'}`);
-    }); */
+    };
+    this.slMetadata = () => { this.setState({ isReady: true }); };
+    this.slAdMetadata = () => { this.setState({ isReady: true }); };
+
+    this.eventDomElement.addEventListener(solidEvents.FULLSCREEN, this.slFullscreen);
+    this.eventDomElement.addEventListener(solidEvents.PAUSE, this.slPause);
+    this.eventDomElement.addEventListener(solidEvents.PLAY, this.slPlay);
+    this.eventDomElement.addEventListener('adplay', this.slAdPlay);
+    this.eventDomElement.addEventListener(solidEvents.SEEKING, this.slSeeking);
+    this.eventDomElement.addEventListener(solidEvents.SEEKED, this.slSeeked);
+    this.eventDomElement.addEventListener(solidEvents.ENDED, this.slEnded);
+    this.eventDomElement.addEventListener(solidEvents.BUFFERING, this.slBuffering);
+    this.eventDomElement.addEventListener(solidEvents.VIDEOTYPE, this.slVideoType);
+    this.eventDomElement.addEventListener(solidEvents.METADATA, this.slMetadata);
+    this.eventDomElement.addEventListener(`ad${solidEvents.METADATA}`, this.slAdMetadata);
   }
 }

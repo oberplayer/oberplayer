@@ -1,7 +1,6 @@
 import { log } from '../modules/lib';
 import i18n from '../modules/i18n';
-import { version } from '../../package.json';
-import { PlayerOptions, PlaylistEntry } from '@oberplayer-free/oberplayer';
+import { PlaylistEntry } from '@oberplayer/oberplayer';
 
 const getRenderingPlace = (): string | undefined => {
   let renderingPlace: string | undefined;
@@ -16,7 +15,16 @@ const getRenderingPlace = (): string | undefined => {
   return renderingPlace;
 };
 
-
+export const sendPlayHit = (videoUrl: PlaylistEntry["videoUrl"]): void => {
+  if (globalThis.bpdebug) log('info', i18n.t('log.send.playhit'));
+  if (globalThis.gtag) {
+    globalThis.gtag('event', 'video_play', {
+      userId: undefined,
+      videoUrl,
+      renderingPlace: getRenderingPlace(),
+    });
+  }
+};
 
 export const handleCss = (cdnBaseUrl = 'https://cdn.oberplayer.com'): Promise<string> => {
   let cssLoadTimeout: ReturnType<typeof setTimeout>;
@@ -40,58 +48,3 @@ export const handleCss = (cdnBaseUrl = 'https://cdn.oberplayer.com'): Promise<st
   });
 };
 
-// now get className based on state
-const variableToString = (varObj: object): string => Object.keys(varObj)[0];
-
-const stateToClassName = (state: boolean | undefined, name: string): string => (state ? `is--${name.substr(2)}` : '');
-
-export const getClassList = (state: PlayerState, props: PlayerProps): string[] => {
-  const {
-    isAdPlayer,
-    isStylesheetLoaded,
-    isSmall,
-    isWaitingForClick,
-    isReady,
-    isPaused,
-    isFullScreen,
-    isPlaying,
-    isSeeking,
-    isBuffering,
-    isComplete,
-    isLive,
-    isChromecasting,
-    isMessage,
-    isMessageUnderClickCatcher,
-    isControlsVisible,
-    isDragging,
-  } = state;
-
-  const { isTouchDevice, aspect } = props;
-
-  const isChromeless = aspect !== 'player';
-
-  const classList: string[] = [];
-  classList.push(
-    stateToClassName(isChromeless, variableToString({ isChromeless }).toLowerCase()),
-    stateToClassName(isAdPlayer, variableToString({ isAdPlayer }).toLowerCase()),
-    stateToClassName(isTouchDevice, variableToString({ isTouchDevice }).toLowerCase()),
-    stateToClassName(isStylesheetLoaded, variableToString({ isStylesheetLoaded }).toLowerCase()),
-    stateToClassName(isSmall, variableToString({ isSmall }).toLowerCase()),
-    stateToClassName(isWaitingForClick, variableToString({ isWaitingForClick }).toLowerCase()),
-    stateToClassName(isReady, variableToString({ isReady }).toLowerCase()),
-    stateToClassName(isPaused, variableToString({ isPaused }).toLowerCase()),
-    stateToClassName(isFullScreen, variableToString({ isFullScreen }).toLowerCase()),
-    stateToClassName(isPlaying, variableToString({ isPlaying }).toLowerCase()),
-    stateToClassName(isSeeking, variableToString({ isSeeking }).toLowerCase()),
-    stateToClassName(isBuffering, variableToString({ isBuffering }).toLowerCase()),
-    stateToClassName(isComplete, variableToString({ isComplete }).toLowerCase()),
-    stateToClassName(isLive, variableToString({ isLive }).toLowerCase()),
-    stateToClassName(isControlsVisible, variableToString({ isControlsVisible }).toLowerCase()),
-    stateToClassName(isDragging, variableToString({ isDragging }).toLowerCase()),
-    stateToClassName(isChromecasting, variableToString({ isChromecasting }).toLowerCase()),
-    stateToClassName(isMessage, variableToString({ isMessage }).toLowerCase()),
-    stateToClassName(isMessageUnderClickCatcher, variableToString({ isMessageUnderClickCatcher }).toLowerCase()),
-    version.replaceAll('.', '_'),
-  );
-  return classList;
-};

@@ -1,4 +1,4 @@
-declare module '@oberplayer-free/oberplayer' {
+declare module '@oberplayer/oberplayer' {
     type SolidEvents =
       | 'play'
       | 'firstplay'
@@ -135,7 +135,6 @@ declare module '@oberplayer-free/oberplayer' {
       lang?: keyof Phrases;
       phrases?: Phrases;
       debug?: boolean;
-      token?: string;
       color?: string;
       chromecast_receiver_id?: string;
     };

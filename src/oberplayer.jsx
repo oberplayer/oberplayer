@@ -2,7 +2,6 @@ import {
   render,
   createRef,
 } from 'preact';
-
 import Player from './components/Player';
 import { solidEvents, triggerSolidEvent } from './modules/events';
 import { defaultPlayerConfig } from './modules/config';
@@ -10,7 +9,10 @@ import i18n, { isValidLocale } from './modules/i18n';
 import { log, getCdnBaseUrl, secondsToHumanreadableDuration } from './modules/lib';
 import './scss/oberplayer.scss';
 
-
+const isChromeBrowser = () => navigator.userAgent.indexOf('Chrome') > -1;
+const shouldHandleVast = (vast) => vast && (vast.vastUrl || vast.vmapUrl);
+const shouldHandleChromecast = () => isChromeBrowser();
+const shouldHandleVtt = (thumbnailsVttUrl, chaptersVttUrl) => thumbnailsVttUrl || chaptersVttUrl;
 
 const oberplayerInstances = {};
 
@@ -86,7 +88,6 @@ class Oberplayer {
       enumerable: true,
     });
     this.playlistIndex = 0;
-    
   }
 
   async setup(options) {
@@ -101,13 +102,19 @@ class Oberplayer {
     this.options = mergedOptions;
     globalThis.bpdebug = mergedOptions.debug;
 
+    // opt-in monitoring (LogRocket)
+    if (mergedOptions && mergedOptions.monitoring === true) {
+      import('logrocket').then((LR) => {
+        LR.default.init('s5n519/ober-player');
+      }).catch((err) => { log('error', 'LogRocket failed to load', err); });
+    }
+
     if (mergedOptions && mergedOptions.lang && isValidLocale(mergedOptions.lang)) this.lang = mergedOptions.lang;
     else this.lang = defaultPlayerConfig.lang;
 
     // load locales data
     i18n.handleLocales(this.lang, mergedOptions.phrases);
 
-    if (mergedOptions && mergedOptions.token) this.token = mergedOptions.token;
     if (mergedOptions && mergedOptions.color) this.color = mergedOptions.color;
 
     // means a player has been already render in this this.domElement, should be destroyed first
@@ -116,7 +123,6 @@ class Oberplayer {
       return false;
     }
 
-    
 
     this.goNextVideo = async () => {
       this.playlistIndex += 1;
@@ -178,7 +184,17 @@ class Oberplayer {
     triggerSolidEvent(this.eventDomElement, solidEvents.SETUP);
     this.isSetup = true;
 
-    
+    // load chromecast if Chrome browser (one lib per page)
+    if (shouldHandleChromecast() && !globalThis.isLoadingCast) {
+      globalThis.isLoadingCast = true;
+      try {
+        const castmodule = await import('./premium/chromecast');
+        const Cast = castmodule.default;
+        new Cast(this, mergedOptions.chromecast_receiver_id);
+      } catch (error) {
+        log('error', error);
+      }
+    }
 
     if (mergedOptions && mergedOptions.playlist) {
       await this.load(
@@ -294,11 +310,32 @@ class Oberplayer {
       videoUrl, videoProviderOptions, metadata, geolocation, rights, restrictions, vast, autoplay, muted, volume, aspect, drm, goToButtons, thumbnailsVttUrl, chaptersVttUrl, aspectRatio,
     } = playlistItem;
 
-    
+    if (shouldHandleVast(vast)) {
+      try {
+        const vastmodule = await import('./premium/vast');
+        const Vast = vastmodule.default;
+        this.vastPlugin = await new Vast(this, vast).init();
+      } catch (error) {
+        log('error', error);
+      }
+    } else {
+      this.vastPlugin = undefined;
+    }
+
+    if (shouldHandleVtt(thumbnailsVttUrl, chaptersVttUrl)) {
+      try {
+        const vttmodule = await import('./premium/vtt.js');
+        const Vtt = vttmodule.default;
+        this.vttPlugin = await new Vtt(this, { thumbnailsVttUrl, chaptersVttUrl });
+      } catch (error) {
+        log('error', error);
+      }
+    } else {
+      this.vttPlugin = undefined;
+    }
 
     render(
       <Player
-        // free
         videoUrl={videoUrl}
         videoProviderOptions={videoProviderOptions}
         autoplay={autoplay !== undefined ? autoplay : defaultPlayerConfig.autoplay}
@@ -307,7 +344,6 @@ class Oberplayer {
         aspect={aspect || defaultPlayerConfig.aspect}
         lang={this.lang}
         aspectRatio={aspectRatio || defaultPlayerConfig.aspectRatio}
-        // premium
         drm={drm}
         metadata={metadata}
         geolocation={geolocation}
@@ -316,13 +352,11 @@ class Oberplayer {
         goToButtons={goToButtons}
         thumbnailsVttUrl={thumbnailsVttUrl}
         chaptersVttUrl={chaptersVttUrl}
-        // internal technical props
         eventDomElement={this.eventDomElement}
         ref={this.instanceRef}
         isTouchDevice={'ontouchstart' in document.documentElement}
         onClickPrevious={onClickPrevious}
         onClickNext={onClickNext}
-        
         color={this.color}
       />,
       this.domElement,

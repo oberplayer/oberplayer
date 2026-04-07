@@ -4,7 +4,7 @@ import { Settings, FullScreen, FullScreenExit, Airplay, Live, Hd, Hdr, Uhd } fro
 import i18n from '../modules/i18n';
 
 const ButtonsRight = (props: ButtonsRightProps) => {
-  const { api, eventDomElement, onClickSettingsIcon, shouldHover, isTouchDevice, isAdPlayer, isLive, entitlements, clickActivatedOnTouchDevice } = props;
+  const { api, eventDomElement, onClickSettingsIcon, shouldHover, isTouchDevice, isAdPlayer, isLive, clickActivatedOnTouchDevice } = props;
 
   const [isAirPlayAvailable, setIsAirPlayAvailable] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -57,9 +57,23 @@ const ButtonsRight = (props: ButtonsRightProps) => {
         <Live className="live--redcircle" />
         LIVE
       </div>
-      {
-      
-      }
+      <google-cast-launcher
+        tabIndex={0}
+        type="button"
+        className="icons tooltip tooltip--right cast"
+        aria-label={i18n.t('ariaLabel.watchOnTv')}
+        onMouseMove={(evt: MouseEvent) => {
+          if (evt.target instanceof HTMLElement && shouldHover) {
+            evt.target.classList.add('is--hover');
+          }
+        }}
+        onMouseLeave={(evt: { target: { classList: { remove: (arg0: string) => void; }; }; }) => {
+          if (evt.target instanceof HTMLElement) {
+            evt.target.classList.remove('is--hover');
+          }
+        }}
+        onClick={(evt: MouseEvent) => evt.stopPropagation()}
+      />
       {isAirPlayAvailable && (
         <button
           type="button"

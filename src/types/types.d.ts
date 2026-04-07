@@ -1,4 +1,4 @@
-import { PlayerOptions, DefaultPlayerConfig, PlaylistEntry, GoToButton, Metadata, PlayerApi } from '@oberplayer-free/oberplayer';
+import { PlayerOptions, DefaultPlayerConfig, PlaylistEntry, GoToButton, Metadata, PlayerApi } from '@oberplayer/oberplayer';
 import Polyglot from 'node-polyglot';
 import { JSX } from 'preact';
 
@@ -26,7 +26,7 @@ declare global {
   }
   
   interface GtagEventParams {
-    userId: string | undefined;
+    userId?: undefined;
     videoUrl: PlaylistEntry["videoUrl"];
     renderingPlace: string | undefined;
   }
@@ -88,15 +88,6 @@ declare global {
     }];
   }  
 
-  export interface entitlements {
-    userPreferences: boolean,
-    hostsAllowed: string,
-    goToButton: boolean,
-    restrictions: boolean,
-    rights: boolean,
-    geolocation: boolean,
-  }
-
   interface Robustness {
     videoRobustness: string;
     audioRobustness: string;
@@ -113,7 +104,7 @@ declare global {
     [key: string]: string;
   }
 
-  interface ShakaProviderOptions {
+  interface VideoProviderOptions {
     videoUrl: PlaylistEntry["videoUrl"];
     videoTag: PlayerAttributes["videoTag"];
     volume: PlaylistEntry["volume"];
@@ -123,7 +114,6 @@ declare global {
     domElement: PlayerAttributes["domElement"];
     isAdPlayer: PlayerState["isAdPlayer"];
     autoplay: PlaylistEntry["autoplay"];
-    entitlements?: entitlements;
     resetToPreview: PlayerFunctions["resetToPreview"];
     api: PlayerApi;
   }
@@ -142,7 +132,6 @@ declare global {
     isLive: () => boolean;
     getTextTracks: () => [ShakaTextTrack];
     getAudioLanguagesAndRoles: () => [AudioTrack];
-    loadsetTextTrackVisibility: () => void;
     selectAudioLanguage: (language: string, role?: string) => void;
     resetConfiguration: () => void;
     load: (videoUrl: PlayerProps['videoUrl']) => void;
@@ -159,8 +148,7 @@ declare global {
     width: number;
     videoBandwidth: number;
     bandwidth?: undefined;
-    hdr?: boolean;
-    boolean: boolean;
+    hdr?: boolean | 'PQ' | 'HLG';
     active: boolean;
     label: string;
     language: string;
@@ -172,7 +160,7 @@ declare global {
     width: number;
     videoBandwidth?: undefined;
     bandwidth: number;
-    hdr?: boolean | string;
+    hdr?: boolean | 'PQ' | 'HLG';
     active: boolean;
     label: string;
     language: string;
@@ -186,10 +174,9 @@ declare global {
   & DefaultPlayerConfig
   & {
     eventDomElement: HTMLDivElement;
-    entitlements?: entitlements;
     onClickPrevious: () => void;
     isTouchDevice: boolean;
-    videoProviderOptions: object;
+    videoProviderOptions: { [key: string]: unknown };
     onClickNext: () => void;
     drm: {
       keySystem: "com.widevine.alpha" | "com.microsoft.playready" | "com.apple.fps",
@@ -218,10 +205,10 @@ declare global {
     videoTag: HTMLVideoElement | null | undefined;
     videoProvider?: {
       getVideoUrl: () => string;
-      EmptyVideoData: () => void;
-      detach: () => void;
-      destroy: () => void;
-      load: (videoUrl: PlaylistEntry["videoUrl"], drm: PlayerProps["drm"], videoProviderOptions: PlayerProps["videoProviderOptions"]) => void;
+      clearTrackData: () => void;
+      detach: () => Promise<void>;
+      destroy: () => Promise<void> | void;
+      load: (videoUrl: PlaylistEntry["videoUrl"], drm?: PlayerProps["drm"], videoProviderOptions?: PlayerProps["videoProviderOptions"]) => Promise<void>;
     };
     mouseEnterTimeout?: number;
     shouldPlayOnRelease?: boolean | undefined;
@@ -320,7 +307,7 @@ declare global {
   }
 
   export type ControlProps = PlayerState
-  & Pick<PlayerProps, 'entitlements' | 'color' | 'isTouchDevice' | 'onClickPrevious' | 'onClickNext'>
+  & Pick<PlayerProps, 'color' | 'isTouchDevice' | 'onClickPrevious' | 'onClickNext'>
   & Pick<PlayerFunctions, 'setShouldPlayOnRelease' | 'unHoverTooltips' | 'setIsComplete' | 'setIsDragging' | 'setIsSettingsOpen' | 'clickEventListener'>
   & Pick<PlayerAttributes, 'eventDomElement' | 'clickActivatedOnTouchDevice' | 'shouldPlayOnRelease'>
   & {
@@ -329,7 +316,7 @@ declare global {
   }
 
   export type ButtonProps = PlayerState
-  & Pick<PlayerProps, 'isTouchDevice' | 'onClickPrevious' | 'onClickNext' | 'entitlements'>
+  & Pick<PlayerProps, 'isTouchDevice' | 'onClickPrevious' | 'onClickNext'>
   & {
     onClickSettingsIcon: () => void;
     shouldHover: PlayerState['isSettingsOpen'];
@@ -390,7 +377,6 @@ declare global {
   isTouchDevice: PlayerProps['isTouchDevice'];
   isAdPlayer?: boolean;
   isLive: PlayerState["isLive"];
-  entitlements: PlayerProps['entitlements'];
   clickActivatedOnTouchDevice: PlayerAttributes['clickActivatedOnTouchDevice'];
 }
 

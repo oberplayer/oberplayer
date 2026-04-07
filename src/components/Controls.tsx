@@ -24,7 +24,6 @@ function Controls(props:ControlProps) {
     isHovered,
     vttThumbnailsData,
     vttChaptersData,
-    entitlements,
     eventDomElement,
     api,
     setShouldPlayOnRelease,
@@ -104,7 +103,6 @@ function Controls(props:ControlProps) {
             clickActivatedOnTouchDevice={clickActivatedOnTouchDevice}
             duration={duration}
             setShouldPlayOnRelease={setShouldPlayOnRelease}
-            entitlements={entitlements}
           />
         )}
 
@@ -141,7 +139,6 @@ function Controls(props:ControlProps) {
             isLive={isLive}
             color={color}
             clickActivatedOnTouchDevice={clickActivatedOnTouchDevice}
-            entitlements={entitlements}
             duration={duration}
             
           />

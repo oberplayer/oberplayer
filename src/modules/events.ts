@@ -1,5 +1,5 @@
 import { isNotFullScreen } from './fullscreen';
-import { PlayerApi, SolidEvents } from '@oberplayer-free/oberplayer';
+import { PlayerApi, SolidEvents } from '@oberplayer/oberplayer';
 
 interface WebKitPlaybackTargetAvailabilityEvent extends Event {
   availability: string; // 'available' or 'not-available'

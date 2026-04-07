@@ -4,7 +4,7 @@ import ButtonsRight from './ButtonsRight';
 
 function Buttons(props:ButtonProps) {
   const ref = useRef(null);
-  const { api, eventDomElement, onClickSettingsIcon, shouldHover, isTouchDevice, setShouldPlayOnRelease, isAdPlayer, onClickPrevious, onClickNext, isLive, color, entitlements, clickActivatedOnTouchDevice, duration } = props;
+  const { api, eventDomElement, onClickSettingsIcon, shouldHover, isTouchDevice, setShouldPlayOnRelease, isAdPlayer, onClickPrevious, onClickNext, isLive, color, clickActivatedOnTouchDevice, duration } = props;
   return (
     <div className="l-buttons" ref={ref}>
       <ButtonsLeft
@@ -20,7 +20,7 @@ function Buttons(props:ButtonProps) {
         clickActivatedOnTouchDevice={clickActivatedOnTouchDevice}
         duration={duration}
       />
-      <ButtonsRight clickActivatedOnTouchDevice={clickActivatedOnTouchDevice} eventDomElement={eventDomElement} api={api} onClickSettingsIcon={onClickSettingsIcon} shouldHover={shouldHover} isTouchDevice={isTouchDevice} isAdPlayer={isAdPlayer} isLive={isLive} entitlements={entitlements} />
+      <ButtonsRight clickActivatedOnTouchDevice={clickActivatedOnTouchDevice} eventDomElement={eventDomElement} api={api} onClickSettingsIcon={onClickSettingsIcon} shouldHover={shouldHover} isTouchDevice={isTouchDevice} isAdPlayer={isAdPlayer} isLive={isLive} />
     </div>
   );
 }
