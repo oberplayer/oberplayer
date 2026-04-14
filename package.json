@@ -1,7 +1,7 @@
 {
   "name": "@oberplayer/oberplayer",
   "author": "Thibaut Lion LID",
-  "version": "4.1.0",
+  "version": "4.1.1",
   "types": "oberplayer.d.ts",
   "sideEffects": [
     "*.css",
